@@ -2,12 +2,10 @@
 (function(){
   function ready(fn){ document.readyState!='loading'? fn(): document.addEventListener('DOMContentLoaded', fn); }
   ready(function(){
-    // Wrapper
     const WRAP = document.createElement('div');
     WRAP.className = 'minesweeper-embed';
     document.body.appendChild(WRAP);
 
-    // Styles
     const style = document.createElement('style');
     style.textContent = `
       .minesweeper-embed{ display:grid; gap:.5rem; font-family:"MS Sans Serif", Tahoma, sans-serif; }
@@ -15,8 +13,8 @@
       .minesweeper-embed .lcd{ background:#000; color:#00ff00; font-weight:700; font-family:"Lucida Console", monospace; padding:2px 8px; min-width:66px; text-align:right; }
       .minesweeper-embed .btn{ padding:4px 10px; font-weight:700; cursor:pointer; background:transparent; border:1px solid transparent; }
       .minesweeper-embed .board{ display:grid; gap:2px; }
-      .minesweeper-embed .cell{ width:28px; height:28px; display:grid; place-items:center; font-weight:700; font-size:14px; user-select:none; cursor:pointer; background:#c0c0c0; position:relative; }
-      .minesweeper-embed .cell.revealed{ background:#bdbdbd; cursor:default; }
+      .minesweeper-embed .cell{ width:28px; height:28px; display:grid; place-items:center; font-weight:700; font-size:14px; user-select:none; background:#c0c0c0; position:relative; }
+      .minesweeper-embed .cell.revealed{ background:#bdbdbd; }
       .minesweeper-embed .cell.flag::after{ content:"⚑"; font-size:16px; color:#ff0000; }
       .minesweeper-embed .cell.mine::after{ content:"●"; color:#000; font-size:14px; }
       .minesweeper-embed .n1{ color:#0000ff } .minesweeper-embed .n2{ color:#00a000 } .minesweeper-embed .n3{ color:#ff0000 } .minesweeper-embed .n4{ color:#000080 }
@@ -26,7 +24,6 @@
     `;
     document.head.appendChild(style);
 
-    // UI
     WRAP.innerHTML = `
       <div class="panel">
         <div class="lcd" id="mineCount">010</div>
@@ -44,7 +41,6 @@
         <div class="lcd" id="status">READY</div>
       </div>`;
 
-    // Game state
     const presets = { easy:{rows:9, cols:9, mines:10}, med:{rows:16, cols:16, mines:40}, hard:{rows:16, cols:30, mines:99} };
     let ROWS=9, COLS=9, MINES=10;
     const boardEl = WRAP.querySelector('#board');
@@ -55,7 +51,6 @@
 
     let grid=[], started=false, gameOver=false, flags=0, revealed=0, t=0, tHandle=null;
 
-    // Helpers
     const z = n => n.toString().padStart(3,'0');
     const clamp = (v,min,max) => Math.max(min, Math.min(max,v));
     const inBounds = (r,c) => r>=0 && r<ROWS && c>=0 && c<COLS;
@@ -67,15 +62,14 @@
       boardEl.style.gridTemplateColumns = `repeat(${COLS}, 28px)`;
       for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
         const cell = grid[r][c];
-        const d = document.createElement('div'); d.className='cell'; cell.el=d; boardEl.appendChild(d);
-        // Primary click: reveal or chord; Shift+Click: flag (for Carrd right-click issues)
+        const d = document.createElement('button');
+        d.type='button';
+        d.className='cell';
+        cell.el=d; boardEl.appendChild(d);
         d.addEventListener('click', (e)=>{ e.stopPropagation(); if(e.shiftKey) { toggleFlag(cell); } else { leftClick(cell); } });
         d.addEventListener('dblclick', (e)=>{ e.stopPropagation(); leftClick(cell); });
-        // Right-click flag
         d.addEventListener('contextmenu', (e)=>{ e.preventDefault(); e.stopPropagation(); toggleFlag(cell); });
-        // Middle-click chord
         d.addEventListener('auxclick', (e)=>{ if(e.button===1){ e.preventDefault(); leftClick(cell); } });
-        // Touch long-press flag
         let pressTimer=null; d.addEventListener('touchstart', ()=>{ pressTimer=setTimeout(()=> toggleFlag(cell), 350); });
         d.addEventListener('touchend', ()=> clearTimeout(pressTimer));
       }
@@ -87,7 +81,7 @@
       let placed=0; while(placed<MINES){
         const r=Math.floor(Math.random()*ROWS), c=Math.floor(Math.random()*COLS);
         if(grid[r][c].mine) continue;
-        if(Math.abs(r-safeR)<=1 && Math.abs(c-safeC)<=1) continue; // keep first-click area safe
+        if(Math.abs(r-safeR)<=1 && Math.abs(c-safeC)<=1) continue;
         grid[r][c].mine=true; placed++;
       }
       for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(!grid[r][c].mine){
@@ -101,9 +95,7 @@
     function leftClick(cell){
       if (gameOver) return;
       if (!started){ started=true; placeMines(cell.r,cell.c); startTimer(); }
-      // Normal reveal
       if (!cell.revealed && !cell.flagged){ reveal(cell); return; }
-      // Chord on numbers
       if (cell.revealed && cell.n>0){
         let flagged=0; const toOpen=[];
         eachNeighbor(cell.r,cell.c,(nr,nc)=>{ const nb=grid[nr][nc]; if(nb.flagged) flagged++; else if(!nb.revealed) toOpen.push(nb); });

@@ -15,7 +15,6 @@
       .minesweeper-embed .board{ display:grid; gap:2px; }
       .minesweeper-embed .cell{ width:28px; height:28px; display:grid; place-items:center; font-weight:700; font-size:14px; user-select:none; background:#c0c0c0; position:relative; }
       .minesweeper-embed .cell.revealed{ background:#bdbdbd; }
-      .minesweeper-embed .cell.dead{ background:#e0e0e0; color:#a0a0a0; cursor:default; }
       .minesweeper-embed .cell.flag::after{ content:"⚑"; font-size:16px; color:#ff0000; }
       .minesweeper-embed .cell.mine::after{ content:"●"; color:#000; font-size:14px; }
       .minesweeper-embed .n1{ color:#0000ff } .minesweeper-embed .n2{ color:#00a000 } .minesweeper-embed .n3{ color:#ff0000 } .minesweeper-embed .n4{ color:#000080 }
@@ -28,7 +27,7 @@
     WRAP.innerHTML = `
       <div class="panel">
         <div class="lcd" id="mineCount">010</div>
-        <button class="btn" id="resetBtn" title="Restart">:‑)</button>
+        <button class="btn" id="resetBtn" title="Restart">:-)</button>
         <div class="lcd" id="timer">000</div>
       </div>
       <div class="board" id="board"></div>
@@ -59,7 +58,7 @@
 
     function build(){
       boardEl.innerHTML='';
-      grid = Array.from({length:ROWS},(_,r)=> Array.from({length:COLS},(_,c)=>({r,c,mine:false,n:0,revealed:false,flagged:false,el:null})))
+      grid = Array.from({length:ROWS},(_,r)=> Array.from({length:COLS},(_,c)=>({r,c,mine:false,n:0,revealed:false,flagged:false,el:null})));
       boardEl.style.gridTemplateColumns = `repeat(${COLS}, 28px)`;
       for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
         const cell = grid[r][c];
@@ -75,7 +74,7 @@
         d.addEventListener('touchend', ()=> clearTimeout(pressTimer));
       }
       flags=0; revealed=0; started=false; gameOver=false; t=0; timerEl.textContent='000';
-      mineCountEl.textContent=z(MINES-flags); statusEl.textContent='READY'; resetBtn.textContent=':‑)';
+      mineCountEl.textContent=z(MINES-flags); statusEl.textContent='READY'; resetBtn.textContent=':-)';
     }
 
     function placeMines(safeR,safeC){
@@ -114,8 +113,6 @@
       if(cell.mine){ cell.el.classList.add('mine'); lose(); return; }
       if(cell.n>0){ cell.el.textContent=cell.n; cell.el.classList.add('n'+cell.n); }
       else eachNeighbor(cell.r,cell.c,(nr,nc)=> reveal(grid[nr][nc]));
-      // Mark surrounding dead squares
-      if(cell.revealed && cell.n>0){ eachNeighbor(cell.r,cell.c,(nr,nc)=>{ const nb=grid[nr][nc]; if(!nb.mine && !nb.flagged && !nb.revealed){ nb.el.classList.add('dead'); } }); }
       checkWin();
     }
 
